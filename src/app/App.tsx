@@ -1,9 +1,13 @@
+import { Suspense } from "react";
+import { EraView } from "./views/EraView.tsx";
+import { AgeView } from "./views/AgeView.tsx";
+import { GeoView } from "./views/GeoView.tsx";
 import { useUrlState } from "./hooks/useUrlState.ts";
 
 const VIEWS = [
-  { id: "era", label: "時代", hint: "婚姻・離婚", ready: true },
-  { id: "age", label: "年齢", hint: "初再婚", ready: true },
-  { id: "geo", label: "地域", hint: "地域差", ready: true },
+  { id: "era", label: "時代", hint: "1899–2024", ready: true },
+  { id: "age", label: "年齢", hint: "初婚・再婚", ready: true },
+  { id: "geo", label: "地域", hint: "47都道府県", ready: true },
 ] as const;
 
 type ViewId = (typeof VIEWS)[number]["id"];
@@ -21,9 +25,7 @@ export function App() {
             <h1 className="text-[15px] font-semibold tracking-tight">
               日本人はいつ結婚し、別れてきたか
             </h1>
-            <p className="text-[11px] text-muted">
-              人口動態統計
-            </p>
+            <p className="text-[11px] text-muted">厚生労働省「人口動態調査」</p>
           </div>
           <nav className="flex gap-1 -mb-px" aria-label="ビュー">
             {VIEWS.map((v) => (
@@ -49,16 +51,15 @@ export function App() {
         </div>
       </header>
 
-<main className="mx-auto w-full max-w-[1240px] px-6 py-16">
-  <p className="text-[13px] text-ink">「日本人はいつ結婚し、別れてきたか」のビュー実装は Phase 2 で進めます。</p>
-  <p className="mt-2 text-[12px] text-muted">
-    いまは骨格のみ。主な統計は「人口動態統計」。可視化の核: 初婚・再婚、婚姻率、離婚率、同居期間、地域差
-  </p>
-  <p className="mt-4 text-[11px] text-faint">選択中のタブ: {view}</p>
-</main>
+      <Suspense key={view} fallback={<Loading />}>
+        {view === "era" && <EraView />}
+        {view === "age" && <AgeView />}
+        {view === "geo" && <GeoView />}
+      </Suspense>
 
       <footer className="mx-auto w-full max-w-[1240px] px-6 pt-2 pb-10 text-[11px] leading-relaxed text-faint">
-        出典: 人口動態統計（詳細は docs/data-sources.md。表IDは調査後に確定）。
+        出典: 厚生労働省「人口動態調査」確定数（e-Stat）。
+        婚姻率・離婚率は人口千対。初婚年齢は結婚生活に入ったときの年齢。
         <a
           href="https://visualizing.jp/"
           className="mt-2 block w-fit transition-colors duration-150 hover:text-muted"
@@ -66,6 +67,14 @@ export function App() {
           visualizing.jp
         </a>
       </footer>
+    </div>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="mx-auto w-full max-w-[1240px] px-6 py-16 text-[12px] text-faint">
+      読み込み中
     </div>
   );
 }

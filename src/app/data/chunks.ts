@@ -10,9 +10,10 @@ export interface EraData {
   years: number[];
 }
 
-export interface FormData {
-  formDims: DictEntry[];
-  codes: DictEntry[];
+export interface AgeData {
+  ages: DictEntry[];
+  sexes: DictEntry[];
+  types: DictEntry[];
   cube: CubeView;
   years: string[];
 }
@@ -47,16 +48,17 @@ export function loadEra(): Promise<EraData> {
   }));
 }
 
-export function loadForm(): Promise<FormData> {
-  return chunk<CubeJson & { formDims: DictEntry[]; codes: DictEntry[] }, FormData>(
-    "form",
-    (raw) => ({
-      formDims: raw.formDims,
-      codes: raw.codes,
-      cube: new CubeView(raw),
-      years: [...raw.dims.find((d) => d.name === "year")!.codes].reverse(),
-    }),
-  );
+export function loadAge(): Promise<AgeData> {
+  return chunk<
+    CubeJson & { ages: DictEntry[]; sexes: DictEntry[]; types: DictEntry[] },
+    AgeData
+  >("age", (raw) => ({
+    ages: raw.ages,
+    sexes: raw.sexes,
+    types: raw.types,
+    cube: new CubeView(raw),
+    years: [...raw.dims.find((d) => d.name === "year")!.codes].reverse(),
+  }));
 }
 
 export function loadGeo(): Promise<GeoData> {

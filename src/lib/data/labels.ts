@@ -1,198 +1,109 @@
 /**
- * 住宅指標・形態カテゴリの表示定義。
+ * 婚姻・離婚指標の表示定義。
  */
 
-export type MetricKind = "count" | "rate" | "area";
-export type FormDim = "tenure" | "building" | "size" | "vacancy";
+export type MetricUnit = "count" | "per_mille" | "years" | "share";
 
 export interface MetricDef {
   code: string;
   label: string;
-  /** 時代リストのグループ表示用。 */
   group: string;
-  kind: MetricKind;
-  /** 基礎データ側の件数／面積コード。 */
-  countCode?: string;
-  /** 社会生活統計指標側の率コード。 */
-  rateCode?: string;
+  unit: MetricUnit;
   /** 地域ビューに載せるか。 */
   geo: boolean;
 }
 
-export interface FormCodeDef {
-  code: string;
-  label: string;
-  dim: FormDim;
-  /** SSDS 件数コード（vacancy 以外）。 */
-  countCode?: string;
-  level: number;
+/** 時代ビューの指標。 */
+export const ERA_METRICS: readonly MetricDef[] = [
+  { code: "marriage_count", label: "婚姻件数", group: "件数", unit: "count", geo: false },
+  { code: "divorce_count", label: "離婚件数", group: "件数", unit: "count", geo: false },
+  { code: "marriage_rate", label: "婚姻率", group: "率", unit: "per_mille", geo: true },
+  { code: "divorce_rate", label: "離婚率", group: "率", unit: "per_mille", geo: true },
+  {
+    code: "avg_age_first_husband",
+    label: "平均初婚年齢（夫）",
+    group: "初婚年齢",
+    unit: "years",
+    geo: true,
+  },
+  {
+    code: "avg_age_first_wife",
+    label: "平均初婚年齢（妻）",
+    group: "初婚年齢",
+    unit: "years",
+    geo: true,
+  },
+  {
+    code: "remarriage_share_husband",
+    label: "再婚割合（夫）",
+    group: "初再婚",
+    unit: "share",
+    geo: false,
+  },
+  {
+    code: "remarriage_share_wife",
+    label: "再婚割合（妻）",
+    group: "初再婚",
+    unit: "share",
+    geo: false,
+  },
+  {
+    code: "avg_cohabit",
+    label: "平均同居期間",
+    group: "同居期間",
+    unit: "years",
+    geo: false,
+  },
+  {
+    code: "cohabit_under5_share",
+    label: "同居5年未満の離婚割合",
+    group: "同居期間",
+    unit: "share",
+    geo: false,
+  },
+] as const;
+
+/** 地域ビューの指標（全国比が意味を持つもの）。 */
+export const GEO_METRICS: readonly MetricDef[] = ERA_METRICS.filter((m) => m.geo);
+
+/** 年齢ビュー: 年齢コード（率表と揃えた5歳階級）。 */
+export const AGE_BANDS: readonly { code: string; label: string }[] = [
+  { code: "00210", label: "19歳以下" },
+  { code: "00230", label: "20〜24歳" },
+  { code: "00240", label: "25〜29歳" },
+  { code: "00250", label: "30〜34歳" },
+  { code: "00260", label: "35〜39歳" },
+  { code: "00280", label: "40〜44歳" },
+  { code: "00300", label: "45〜49歳" },
+  { code: "00320", label: "50〜54歳" },
+  { code: "00340", label: "55〜59歳" },
+  { code: "00350", label: "60〜64歳" },
+  { code: "00360", label: "65〜69歳" },
+  { code: "00370", label: "70〜74歳" },
+  { code: "00380", label: "75〜79歳" },
+  { code: "00390", label: "80歳以上" },
+] as const;
+
+export const SEXES = [
+  { code: "husband", label: "夫", estat: "00100" },
+  { code: "wife", label: "妻", estat: "00110" },
+] as const;
+
+export const MARRIAGE_TYPES = [
+  { code: "first", label: "初婚", estat: "00110" },
+  { code: "remarriage", label: "再婚", estat: "00120" },
+] as const;
+
+export const PREF_AREAS = [
+  "00000",
+  ...Array.from({ length: 47 }, (_, i) => String(i + 1).padStart(2, "0") + "000"),
+] as const;
+
+/** e-Stat 時間コード YYYY000000 → "YYYY" */
+export function yearFromTime(code: string): string {
+  return code.slice(0, 4);
 }
 
-/** 時代・地域の指標。 */
-export const METRICS: readonly MetricDef[] = [
-  {
-    code: "total",
-    label: "総住宅数",
-    group: "ストック",
-    kind: "count",
-    countCode: "H1100",
-    geo: false,
-  },
-  {
-    code: "occupied",
-    label: "居住世帯あり",
-    group: "ストック",
-    kind: "count",
-    countCode: "H1101",
-    geo: false,
-  },
-  {
-    code: "vacant",
-    label: "空き家",
-    group: "空き家",
-    kind: "count",
-    countCode: "H110202",
-    rateCode: "#H01405",
-    geo: true,
-  },
-  {
-    code: "owned",
-    label: "持ち家",
-    group: "所有",
-    kind: "count",
-    countCode: "H1310",
-    rateCode: "#H01301",
-    geo: true,
-  },
-  {
-    code: "rented",
-    label: "借家",
-    group: "所有",
-    kind: "count",
-    countCode: "H1320",
-    rateCode: "#H01302",
-    geo: true,
-  },
-  {
-    code: "rented_private",
-    label: "民営借家",
-    group: "所有",
-    kind: "count",
-    countCode: "H1322",
-    rateCode: "#H0130202",
-    geo: true,
-  },
-  {
-    code: "detached",
-    label: "一戸建",
-    group: "建て方",
-    kind: "count",
-    countCode: "H1401",
-    rateCode: "#H01401",
-    geo: true,
-  },
-  {
-    code: "row",
-    label: "長屋建",
-    group: "建て方",
-    kind: "count",
-    countCode: "H1402",
-    rateCode: "#H01402",
-    geo: true,
-  },
-  {
-    code: "apartment",
-    label: "共同住宅",
-    group: "建て方",
-    kind: "count",
-    countCode: "H1403",
-    rateCode: "#H01403",
-    geo: true,
-  },
-  {
-    code: "floor_area",
-    label: "1住宅当たり延べ面積",
-    group: "広さ",
-    kind: "area",
-    countCode: "H2130",
-    geo: true,
-  },
-] as const;
-
-/** 形態ビューのカテゴリ（所有・建て方・畳数）。空き家種類は別途年次表。 */
-export const FORM_CODES: readonly FormCodeDef[] = [
-  { code: "owned", label: "持ち家", dim: "tenure", countCode: "H1310", level: 1 },
-  { code: "rented_public", label: "公営・UR・公社", dim: "tenure", countCode: "H1321", level: 1 },
-  { code: "rented_private", label: "民営借家", dim: "tenure", countCode: "H1322", level: 1 },
-  { code: "rented_issued", label: "給与住宅", dim: "tenure", countCode: "H1323", level: 1 },
-
-  { code: "detached", label: "一戸建", dim: "building", countCode: "H1401", level: 1 },
-  { code: "row", label: "長屋建", dim: "building", countCode: "H1402", level: 1 },
-  { code: "apartment", label: "共同住宅", dim: "building", countCode: "H1403", level: 1 },
-  { code: "other_build", label: "その他", dim: "building", countCode: "H1404", level: 1 },
-
-  { code: "tatami_lt6", label: "5.9畳以下", dim: "size", countCode: "H2101", level: 1 },
-  { code: "tatami_6_12", label: "6.0–11.9畳", dim: "size", countCode: "H2102", level: 1 },
-  { code: "tatami_12_18", label: "12.0–17.9畳", dim: "size", countCode: "H2103", level: 1 },
-  { code: "tatami_18_24", label: "18.0–23.9畳", dim: "size", countCode: "H2104", level: 1 },
-  { code: "tatami_24_30", label: "24.0–29.9畳", dim: "size", countCode: "H2105", level: 1 },
-  { code: "tatami_30_36", label: "30.0–35.9畳", dim: "size", countCode: "H2106", level: 1 },
-  { code: "tatami_36_48", label: "36.0–47.9畳", dim: "size", countCode: "H2107", level: 1 },
-  { code: "tatami_48p", label: "48.0畳以上", dim: "size", countCode: "H2108", level: 1 },
-
-  { code: "secondary", label: "二次的住宅", dim: "vacancy", level: 1 },
-  { code: "for_rent", label: "賃貸用", dim: "vacancy", level: 1 },
-  { code: "for_sale", label: "売却用", dim: "vacancy", level: 1 },
-  { code: "other_vacant", label: "その他の空き家", dim: "vacancy", level: 1 },
-] as const;
-
-export const FORM_DIMS: readonly { id: FormDim; label: string }[] = [
-  { id: "tenure", label: "所有" },
-  { id: "building", label: "建て方" },
-  { id: "size", label: "広さ" },
-  { id: "vacancy", label: "空き家" },
-] as const;
-
-/** 空き家種類：年次表ごとの生コード → 正規化コード。 */
-export const VACANT_CODE_MAP: Record<
-  string,
-  Partial<Record<"secondary" | "for_rent" | "for_sale" | "other_vacant" | "vacant_total", string>>
-> = {
-  "2013": {
-    vacant_total: "00008",
-    secondary: "00009",
-    for_rent: "00012",
-    for_sale: "00013",
-    other_vacant: "00014",
-  },
-  "2018": {
-    vacant_total: "22",
-    secondary: "221",
-    for_rent: "222",
-    for_sale: "223",
-    other_vacant: "224",
-  },
-  // 2023 は二次的とその他のコード意味が入れ替わっている（docs/data-sources.md）
-  "2023": {
-    vacant_total: "22",
-    secondary: "224",
-    for_rent: "222",
-    for_sale: "223",
-    other_vacant: "221",
-  },
-};
-
-export const SURVEY_YEARS = [
-  "1978",
-  "1983",
-  "1988",
-  "1993",
-  "1998",
-  "2003",
-  "2008",
-  "2013",
-  "2018",
-  "2023",
-] as const;
-
-export const VACANT_YEARS = ["2013", "2018", "2023"] as const;
+export function timeFromYear(year: string): string {
+  return `${year}000000`;
+}

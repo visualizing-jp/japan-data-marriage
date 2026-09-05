@@ -11,74 +11,63 @@ export interface DatasetDef {
   query?: Record<string, string>;
 }
 
-/** 基礎データの件数コード（カンマ区切り、仕様上限100）。 */
-const COUNT_CODES = [
-  "H1100",
-  "H1101",
-  "H1102",
-  "H110202",
-  "H1310",
-  "H1320",
-  "H1321",
-  "H1322",
-  "H1323",
-  "H1401",
-  "H1402",
-  "H1403",
-  "H1404",
-  "H2130",
-  "H2101",
-  "H2102",
-  "H2103",
-  "H2104",
-  "H2105",
-  "H2106",
-  "H2107",
-  "H2108",
-].join(",");
-
-/** 社会生活統計指標の率コード。 */
-const RATE_CODES = [
-  "#H01301",
-  "#H01302",
-  "#H0130202",
-  "#H01401",
-  "#H01402",
-  "#H01403",
-  "#H01405",
-].join(",");
+/** 人口動態総覧から婚姻・離婚の件数と率だけ取る。 */
+const OVERVIEW_CODES = ["00270", "00280", "00420", "00430"].join(",");
 
 export const DATASETS = {
-  ssdsCount: {
-    key: "ssds-count",
-    statsDataId: "0000010108",
-    label: "社会・人口統計体系 基礎データ Ｈ居住（件数・延べ面積・畳数）",
-    query: { cdCat01: COUNT_CODES },
+  overview: {
+    key: "overview",
+    statsDataId: "0003411561",
+    label: "上巻 年次別にみた人口動態総覧（婚姻・離婚）",
+    query: { cdCat01: OVERVIEW_CODES },
   },
 
-  ssdsRate: {
-    key: "ssds-rate",
-    statsDataId: "0000010208",
-    label: "社会・人口統計体系 社会生活統計指標 Ｈ居住（比率）",
-    query: { cdCat01: RATE_CODES },
+  avgAge: {
+    key: "avg-age",
+    statsDataId: "0003411844",
+    label: "上巻 全婚姻－初婚別にみた年次別夫妻の平均婚姻年齢及び夫妻の年齢差",
   },
 
-  vacant2013: {
-    key: "vacant-2013",
-    statsDataId: "0003095315",
-    label: "住宅・土地統計調査 2013 居住世帯の有無(9区分)",
+  firstRemarriage: {
+    key: "first-remarriage",
+    statsDataId: "0003411837",
+    label: "上巻 年次・夫－妻別にみた初婚－再婚別婚姻件数及び再婚の占める割合",
   },
 
-  vacant2018: {
-    key: "vacant-2018",
-    statsDataId: "0003326560",
-    label: "住宅・土地統計調査 2018 居住世帯の有無(9区分)",
+  cohabit: {
+    key: "cohabit",
+    statsDataId: "0003411864",
+    label: "上巻 年次別にみた同居期間別離婚件数及び百分率並びに平均同居期間",
   },
 
-  vacant2023: {
-    key: "vacant-2023",
-    statsDataId: "0004015740",
-    label: "住宅・土地統計調査 2023 居住世帯の有無(9区分)",
+  ageCount: {
+    key: "age-count",
+    statsDataId: "0003411840",
+    label: "上巻 年齢（5歳階級）×初婚－再婚×夫－妻×年次 婚姻件数",
+  },
+
+  ageRate: {
+    key: "age-rate",
+    statsDataId: "0003413965",
+    label: "上巻 年齢（5歳階級）×初婚－再婚×夫－妻×年次 婚姻率",
+  },
+
+  geoMarriage: {
+    key: "geo-marriage",
+    statsDataId: "0003411835",
+    label: "上巻 都道府県別にみた年次別婚姻件数・婚姻率",
+  },
+
+  geoDivorce: {
+    key: "geo-divorce",
+    statsDataId: "0003411861",
+    label: "上巻 都道府県別にみた年次別離婚件数・離婚率",
+  },
+
+  geoAvgAge: {
+    key: "geo-avg-age",
+    statsDataId: "0003411845",
+    label: "上巻 都道府県別にみた年次別夫妻の平均初婚年齢",
   },
 } as const satisfies Record<string, DatasetDef>;
 
